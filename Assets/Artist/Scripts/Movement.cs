@@ -14,6 +14,7 @@ public class Movement : MonoBehaviour
 
     public void Jump()
     {
-        body.AddForce(Vector3.up * jumpForce);
+        body.AddForce(Vector3.up * jumpForce, ForceMode.Acceleration);
+        Debug.Log("Jumped");
     }
 }

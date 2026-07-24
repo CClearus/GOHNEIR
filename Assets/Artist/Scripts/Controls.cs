@@ -6,6 +6,7 @@ public class Controls : MonoBehaviour
     [SerializeField] float mouseSensitivity = 1f;
     Vector3 rotation;
     Movement movement;
+    public Rigidbody body;
 
     void Start()
     {
@@ -30,9 +31,8 @@ public class Controls : MonoBehaviour
         movement.Move(Quaternion.Euler(0f, rotation.y, 0f) * dir);
 
         // Jump
-        if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, Vector3.down, 1f, LayerMask.GetMask("Default")))
+        if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, Vector3.down, 1.5f, LayerMask.GetMask("Default")))
         {
-            Debug.Log("Space Pressed");
             movement.Jump();
         }
 
