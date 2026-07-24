@@ -31,7 +31,7 @@ public class Controls : MonoBehaviour
         movement.Move(Quaternion.Euler(0f, rotation.y, 0f) * dir);
 
         // Jump
-        if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, Vector3.down, 1.5f, LayerMask.GetMask("Default")))
+        if (Input.GetKeyDown(KeyCode.Space) && (Physics.Raycast(transform.position, Vector3.down, 1.5f, LayerMask.GetMask("Default")) || movement.IsWallSliding))
         {
             movement.Jump();
         }

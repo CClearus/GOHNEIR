@@ -602,8 +602,8 @@ Transform:
   m_GameObject: {fileID: 818823052}
   serializedVersion: 2
   m_LocalRotation: {x: 0.9999996, y: -0, z: -0, w: 0.0008917573}
-  m_LocalPosition: {x: 7.61, y: 0.98, z: 4.62}
-  m_LocalScale: {x: 6.179091, y: 3.7687, z: 5.582301}
+  m_LocalPosition: {x: 7.61, y: 6.08, z: 4.61}
+  m_LocalScale: {x: 6.179091, y: 12.898752, z: 5.582301}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -781,6 +781,7 @@ GameObject:
   - component: {fileID: 1358135466}
   - component: {fileID: 1358135467}
   - component: {fileID: 1358135468}
+  - component: {fileID: 1358135469}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -832,8 +833,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   body: {fileID: 1996048745}
   speed: 10
-  jumpForce: 500
+  jumpForce: 6.5
+  groundCheckDistance: 1.1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1
+  wallCheckDistance: 0.8
+  wallSlideMaxFallSpeed: 0.1
+  wallSlideSpeedMultiplier: 0.2
+  wallJumpForce: 14
+  wallJumpLockDuration: 0.25
+  maxWallJumps: 2
+  wallMask:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!114 &1358135468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1358135464}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b301cdbd3a1a8e3468fb6398dae28391, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  body: {fileID: 1996048745}
+  playerCamera: {fileID: 0}
+  grappleRange: 10
+  grappleAcceleration: 500
+  minDistanceToTarget: 2
+  grappleableLayers:
+    serializedVersion: 2
+    m_Bits: 1
+--- !u!114 &1358135469
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -842,12 +876,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1358135464}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b301cdbd3a1a8e3468fb6398dae28391, type: 3}
+  m_Script: {fileID: 11500000, guid: 2510ee88da05bf34d81891f56b555bf1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: '::'
-  body: {fileID: 1996048745}
-  grappleRange: 10
-  grappleAcceleration: 5
+  m_EditorClassIdentifier: Assembly-CSharp::WallGrab
 --- !u!1 &1996048744
 GameObject:
   m_ObjectHideFlags: 0
@@ -861,6 +892,7 @@ GameObject:
   - component: {fileID: 1996048747}
   - component: {fileID: 1996048746}
   - component: {fileID: 1996048745}
+  - component: {fileID: 1996048750}
   m_Layer: 3
   m_Name: Player Body
   m_TagString: Untagged
@@ -876,7 +908,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1996048744}
   serializedVersion: 5
-  m_Mass: 1000
+  m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -902,7 +934,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1996048744}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 710d35075a49b7949b4f0bbc2e22f715, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -991,6 +1023,19 @@ Transform:
   - {fileID: 1358135465}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1996048750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1996048744}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0036f8edec197448a7621fb9e7f7ca9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  grapple: {fileID: 1358135468}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -8,46 +8,74 @@ public class Movement : MonoBehaviour
     [SerializeField] private float speed = 8f;
     [SerializeField] private float jumpForce = 12f;
 
-    [Header("Wall Slide Settings")]
-    [SerializeField] private float wallCheckDistance = 0.8f;      // How far to check for walls around player
-    [SerializeField] private float wallSlideMaxFallSpeed = 2f;    // Maximum descent speed while sliding
-    [SerializeField] private float wallSlideSpeedMultiplier = 0.5f; // Slower movement while on wall
+    [Header("Ground Check")]
+    [SerializeField] private float groundCheckDistance = 1.1f;
+    [SerializeField] private LayerMask groundMask;
+
+    [Header("Wall Mechanics")]
+    [SerializeField] private float wallCheckDistance = 0.8f;
+    [SerializeField] private float wallSlideMaxFallSpeed = 2f;
+    [SerializeField] private float wallSlideSpeedMultiplier = 0.5f;
+    [SerializeField] private float wallJumpForce = 14f;
+    [SerializeField] private float wallJumpLockDuration = 0.25f;
+    [SerializeField] private int maxWallJumps = 2; // Maximum wall jumps before landing
     [SerializeField] private LayerMask wallMask;
 
     public bool IsWallSliding { get; private set; }
+    public bool CanWallJump => IsWallSliding && wallJumpsRemaining > 0;
 
-    private void FixedUpdate()
+    private Vector3 lastWallNormal;
+    private float controlLockTimer = 0f;
+    private int wallJumpsRemaining;
+
+    private void Start()
     {
-        HandleWallSlide();
+        wallJumpsRemaining = maxWallJumps;
     }
 
-    public void Move(Vector3 dir)
+    private void Update()
     {
-        float currentSpeed = speed;
+        // Countdown the input lock timer
+        if (controlLockTimer > 0)
+        {
+            controlLockTimer -= Time.deltaTime;
+        }
 
-        // Slow down horizontal movement speed if hugging a wall
+        // Reset wall jump charges when grounded
+        if (IsGrounded())
+        {
+            wallJumpsRemaining = maxWallJumps;
+        }
+    }
+
+    public void Move(Vector3 inputDir)
+    {
+        if (controlLockTimer > 0) return;
+
+        HandleWallSlide(inputDir);
+
+        float currentSpeed = speed;
         if (IsWallSliding)
         {
             currentSpeed *= wallSlideSpeedMultiplier;
         }
 
         Vector3 currentVertical = Vector3.up * body.linearVelocity.y;
-        Vector3 targetHorizontal = dir * currentSpeed;
+        Vector3 targetHorizontal = inputDir * currentSpeed;
 
         body.linearVelocity = targetHorizontal + currentVertical;
     }
 
-    private void HandleWallSlide()
+    private void HandleWallSlide(Vector3 inputDir)
     {
-        bool isTouchingWall = CheckForWall(out RaycastHit wallHit);
         bool isFalling = body.linearVelocity.y < 0;
+        bool isPressingWASD = inputDir.sqrMagnitude > 0.01f;
 
-        // Trigger wall slide when falling against a vertical wall surface
-        if (isTouchingWall && isFalling)
+        // Player can only slide if they have wall jump charges left
+        if (isFalling && isPressingWASD && wallJumpsRemaining > 0 && IsPushingIntoWall(inputDir))
         {
             IsWallSliding = true;
 
-            // Cap downward fall speed
             if (body.linearVelocity.y < -wallSlideMaxFallSpeed)
             {
                 body.linearVelocity = new Vector3(
@@ -63,29 +91,45 @@ public class Movement : MonoBehaviour
         }
     }
 
-    private bool CheckForWall(out RaycastHit wallHit)
+    private bool IsPushingIntoWall(Vector3 inputDir)
     {
-        // Cast rays in 4 directions around player (Forward, Back, Left, Right)
-        Vector3[] checkDirections = { transform.forward, -transform.forward, transform.right, -transform.right };
-
-        foreach (Vector3 dir in checkDirections)
+        if (Physics.Raycast(transform.position, inputDir.normalized, out RaycastHit wallHit, wallCheckDistance, wallMask))
         {
-            if (Physics.Raycast(transform.position, dir, out wallHit, wallCheckDistance, wallMask))
+            bool isWall = Vector3.Angle(wallHit.normal, Vector3.up) > 60f;
+            bool isPushingAgainstFace = Vector3.Dot(inputDir.normalized, wallHit.normal) < -0.3f;
+
+            if (isWall && isPushingAgainstFace)
             {
-                // Verify the hit surface is steep enough to be considered a wall (Angle > 60°)
-                if (Vector3.Angle(wallHit.normal, Vector3.up) > 60f)
-                {
-                    return true;
-                }
+                lastWallNormal = wallHit.normal;
+                return true;
             }
         }
 
-        wallHit = default;
         return false;
     }
 
     public void Jump()
     {
-        body.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        if (IsWallSliding && wallJumpsRemaining > 0)
+        {
+            // Consume one wall jump charge
+            wallJumpsRemaining--;
+
+            Vector3 wallJumpDir = (lastWallNormal + Vector3.up).normalized;
+            body.linearVelocity = Vector3.zero;
+            body.AddForce(wallJumpDir * wallJumpForce, ForceMode.Impulse);
+
+            IsWallSliding = false;
+            controlLockTimer = wallJumpLockDuration; 
+        }
+        else if (IsGrounded())
+        {
+            body.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+    }
+
+    public bool IsGrounded()
+    {
+        return Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundMask, QueryTriggerInteraction.Ignore);
     }
 }
