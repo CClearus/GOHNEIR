@@ -269,5 +269,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HallucinationBullet
   speed: 15
-  hitDistance: 2
-  reactionTime: 1
+  warningDistance: 10
+  reactionTime: 3
