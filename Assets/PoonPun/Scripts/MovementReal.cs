@@ -17,9 +17,13 @@ public class PlayerMovementdiddy : MonoBehaviour
     [SerializeField] float gravity = -9.81f;
 
     [Header("Bhop / Air Strafing")]
+    [Tooltip("How fast you speed up toward your wish direction while grounded.")]
     [SerializeField] float groundAccelerate = 10f;
+    [Tooltip("How fast you slow down toward 0 while grounded and not pressing a movement key.")]
     [SerializeField] float groundFriction = 6f;
+    [Tooltip("How fast Accelerate() can add speed per second while airborne. Higher = faster to reach airMaxSpeed and faster strafe-jump momentum gain.")]
     [SerializeField] float airAccelerate = 60f;
+    [Tooltip("The wishspeed cap used by AirAccelerate (NOT your overall air speed cap - that's maxMomentumSpeed below). Keep this low (1-10) so strafing gains speed gradually via repeated small accel ticks instead of snapping straight to top speed.")]
     [SerializeField] float airMaxSpeed = 1f;
     [Tooltip("How freely velocity direction turns toward input while airborne, without losing speed. 0 = no air control, 1 = instant turn.")]
     [SerializeField] float airTurnRate = 6f;
@@ -30,8 +34,13 @@ public class PlayerMovementdiddy : MonoBehaviour
     [Tooltip("Hard cap on horizontal speed gained from bhopping/strafing.")]
     [SerializeField] float maxMomentumSpeed = 20f;
 
+    [Header("Recoil / Knockback")]
+    [Tooltip("How fast a recoil-granted speed boost above maxMomentumSpeed bleeds away (units/sec). Lets gun recoil punch past the normal speed cap temporarily, like slide exceed.")]
+    [SerializeField] float recoilExceedDecay = 10f;
+
     [Header("Crouch")]
     [SerializeField] KeyCode crouchKey = KeyCode.C;
+    [SerializeField] KeyCode crouchKeyAlt = KeyCode.LeftControl;
 
     [Header("Slide")]
     [Tooltip("Minimum ground speed required to start a slide.")]
@@ -51,6 +60,7 @@ public class PlayerMovementdiddy : MonoBehaviour
     Vector3 slideDir;
     float slideSpeed;
     float slideExceedSpeed;
+    float recoilExceedSpeed;
     public bool IsCrouching => isCrouching;
     public bool IsSliding => isSliding;
 
@@ -66,6 +76,19 @@ public class PlayerMovementdiddy : MonoBehaviour
         controller = GetComponent<CharacterController>();
         standHeight = controller.height;
         standCenter = controller.center;
+    }
+
+    /// Applies an instant velocity impulse (e.g. gun recoil/knockback). Horizontal
+    /// component is allowed to punch past maxMomentumSpeed temporarily (decaying via
+    /// recoilExceedDecay) instead of being clamped away next frame - lets tricks like
+    /// shooting backward to bhop, or shooting the ground to boost upward, actually work.
+    public void ApplyRecoil(Vector3 worldImpulse)
+    {
+        horizontalVelocity += new Vector3(worldImpulse.x, 0f, worldImpulse.z);
+        velocity.y += worldImpulse.y;
+
+        float overCap = horizontalVelocity.magnitude - maxMomentumSpeed;
+        if (overCap > recoilExceedSpeed) recoilExceedSpeed = overCap;
     }
 
     void Update()
@@ -114,9 +137,14 @@ public class PlayerMovementdiddy : MonoBehaviour
         }
 
         // Sliding has no momentum limit - exceed speed carried into/through
-        // the slide bypasses the normal bhop hard cap entirely.
-        if (!isSliding && horizontalVelocity.magnitude > maxMomentumSpeed)
-            horizontalVelocity = horizontalVelocity.normalized * maxMomentumSpeed;
+        // the slide bypasses the normal bhop hard cap entirely. A recoil-granted
+        // speed boost gets the same treatment temporarily (see ApplyRecoil), so
+        // shooting doesn't just get insta-clamped away the next frame.
+        float allowedSpeed = maxMomentumSpeed + recoilExceedSpeed;
+        if (!isSliding && horizontalVelocity.magnitude > allowedSpeed)
+            horizontalVelocity = horizontalVelocity.normalized * allowedSpeed;
+
+        recoilExceedSpeed = Mathf.Max(0f, recoilExceedSpeed - recoilExceedDecay * Time.deltaTime);
 
         controller.Move(horizontalVelocity * Time.deltaTime);
 
@@ -129,11 +157,12 @@ public class PlayerMovementdiddy : MonoBehaviour
 
     void UpdateCrouch()
     {
-        bool crouchHeld = Input.GetKey(crouchKey);
+        bool crouchHeld = Input.GetKey(crouchKey) || Input.GetKey(crouchKeyAlt);
         if (!crouchHeld)
             suppressCrouchHold = false;
 
-        if (Input.GetKeyDown(crouchKey) && isGrounded && !isSliding && horizontalVelocity.magnitude >= slideMinSpeed)
+        bool crouchPressed = Input.GetKeyDown(crouchKey) || Input.GetKeyDown(crouchKeyAlt);
+        if (crouchPressed && isGrounded && !isSliding && horizontalVelocity.magnitude >= slideMinSpeed)
             StartSlide();
 
         // Releasing crouch or leaving the ground cancels the slide early -

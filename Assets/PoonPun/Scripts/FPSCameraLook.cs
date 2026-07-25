@@ -18,6 +18,8 @@ public class FPSCameraLook : MonoBehaviour
     float standLocalY;
     bool wasCrouching;
 
+    public float Pitch => pitch;
+
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;

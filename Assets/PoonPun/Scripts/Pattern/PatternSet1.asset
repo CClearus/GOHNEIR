@@ -13,9 +13,19 @@ MonoBehaviour:
   m_Name: PatternSet1
   m_EditorClassIdentifier: Assembly-CSharp::PatternSet1
   patterns:
-  - id: 1_1
+  - id: 1CurveFile
+    attackScript: {fileID: 5114435572578688634, guid: eea9c4c5187214240b65af38de775366, type: 3}
+    cooldownAfterAttack: 10
     bullets:
-    - position: {x: 0, y: 0, z: 0}
-      damage: 0
-    - position: {x: 0, y: 0, z: 0}
-      damage: 0
+    - bulletPrefab: {fileID: 5639366232409716532, guid: 53f8c63158f79bf44bf8afdd6557394c, type: 3}
+      spawnPosition: {x: 0.5, y: 0, z: 1}
+      moveSteps:
+      - move: {x: 0, y: 0, z: 50}
+        duration: 2.5
+      damage: 8
+    - bulletPrefab: {fileID: 5639366232409716532, guid: 53f8c63158f79bf44bf8afdd6557394c, type: 3}
+      spawnPosition: {x: -0.5, y: 0, z: 1}
+      moveSteps:
+      - move: {x: 0, y: 0, z: 50}
+        duration: 2.5
+      damage: 8
