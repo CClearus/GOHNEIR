@@ -4,7 +4,7 @@ public class FPSCameraLook : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] Transform playerBody;
-    [SerializeField] PlayerMovement playerMovement;
+    [SerializeField] PlayerMovementdiddy playerMovement;
 
     [Header("Look")]
     [SerializeField] float mouseSensitivity = 200f;

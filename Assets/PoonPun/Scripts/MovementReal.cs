@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovementdiddy : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] TMP_Text velocityText;
