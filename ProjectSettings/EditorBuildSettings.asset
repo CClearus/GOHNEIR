@@ -23,6 +23,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Garn/Scenes/fakeui.unity
     guid: 97368f53e698753448df82984da26ccb
+  - enabled: 1
+    path: Assets/Artist/Scenes/Main menu.unity
+    guid: bc27b430644391742beda504abed2496
+  - enabled: 1
+    path: Assets/Artist/Scenes/Settings.unity
+    guid: 8e29761158efab74eae83caada1dcd9f
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 99f9c9493070a9d4c979a8fec7c5a8d3, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
